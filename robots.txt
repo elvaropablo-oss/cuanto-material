@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://elvaropablo-oss.github.io/cuanto-material/sitemap.xml
