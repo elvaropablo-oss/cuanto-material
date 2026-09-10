@@ -1,0 +1,101 @@
+name: Quality checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -e
+          for file in assets/*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+
+      - name: Check local HTML references
+        shell: python
+        run: |
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from urllib.parse import urlsplit
+          import sys
+
+          root = Path('.')
+          errors = []
+
+          class Parser(HTMLParser):
+              def __init__(self, source):
+                  super().__init__()
+                  self.source = source
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  for key in ('href', 'src'):
+                      value = attrs.get(key)
+                      if not value:
+                          continue
+                      if value.startswith(('#', 'mailto:', 'tel:', 'data:', 'javascript:')):
+                          continue
+                      parts = urlsplit(value)
+                      if parts.scheme or parts.netloc:
+                          continue
+                      path = parts.path
+                      if not path or path.startswith('/'):
+                          continue
+                      target = (self.source.parent / path).resolve()
+                      try:
+                          target.relative_to(root.resolve())
+                      except ValueError:
+                          continue
+                      if not target.exists():
+                          errors.append(f'{self.source}: missing local {key} -> {value}')
+
+          for html in root.glob('*.html'):
+              parser = Parser(html)
+              parser.feed(html.read_text(encoding='utf-8'))
+
+          if errors:
+              print('\n'.join(errors))
+              sys.exit(1)
+          print('Local HTML references OK')
+
+      - name: Check sitemap URLs map to pages
+        shell: python
+        run: |
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          from urllib.parse import urlparse
+          import sys
+
+          sitemap = Path('sitemap.xml')
+          if not sitemap.exists():
+              sys.exit('sitemap.xml missing')
+          root = ET.parse(sitemap).getroot()
+          ns = {'s': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          errors = []
+          for loc in root.findall('.//s:loc', ns):
+              url = (loc.text or '').strip()
+              path = urlparse(url).path
+              prefix = '/cuanto-material/'
+              if not path.startswith(prefix):
+                  errors.append(f'Unexpected sitemap URL: {url}')
+                  continue
+              rel = path[len(prefix):]
+              target = Path('index.html') if not rel else Path(rel)
+              if not target.exists():
+                  errors.append(f'Sitemap target missing: {url} -> {target}')
+          if errors:
+              print('\n'.join(errors))
+              sys.exit(1)
+          print('Sitemap targets OK')
