@@ -1,6 +1,6 @@
 
 (()=>{
-  const GA_ID='G-EZJ4866V6M', KEY='cuantomaterial_consent_v1';
+  const GA_ID='G-GW7JZFNRRP', KEY='cuantomaterial_consent_v1';
   window.cmTrack=(name,params={})=>{ if(!window.gtag) return; gtag('event',name,{site_project:'cuantomaterial',...params}); };
   function loadGA(){
     if(window.gtag) return;
