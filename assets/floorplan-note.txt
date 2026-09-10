@@ -1,0 +1,1 @@
+Plano personalizado v1: editor SVG local con cuadrícula, snap a 90°, longitudes por pared, cierre de polígono, cálculo de superficie/perímetro, ejemplo en L y guardado de geometría en Mi proyecto.
