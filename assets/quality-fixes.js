@@ -3,8 +3,8 @@
 function styles(){
   if(document.getElementById('cmQualityFixStyles'))return;
   const s=document.createElement('style');s.id='cmQualityFixStyles';s.textContent=`
-    .consent .btn.primary{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important}
-    .consent .btn.primary:hover{background:#a94d33!important;border-color:#a94d33!important}
+    .consent .btn.primary{background:#a94629!important;border-color:#a94629!important;color:#fff!important}
+    .consent .btn.primary:hover{background:#8f3c24!important;border-color:#8f3c24!important}
     .product-score[data-score-band="high"]{background:#dfeee7;color:#174d3c}
     .product-score[data-score-band="good"]{background:#e1edf4;color:#244e63}
     .product-score[data-score-band="mid"]{background:#f3eadb;color:#684f2a}
