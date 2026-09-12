@@ -1,9 +1,12 @@
 (()=>{
 const GA_ID='G-GW7JZFNRRP',KEY='cuantomaterial_consent_v1',PROJECT_KEY='cuantomaterial_project_v1',META_KEY='cuantomaterial_project_meta_v2';
-window.cmTrack=(name,params={})=>{if(!window.gtag)return;gtag('event',name,{site_project:'cuantomaterial',...params})};
+window.cmTrack=(name,params={})=>{if(localStorage.getItem(KEY)!=='yes'||!window.gtag)return;gtag('event',name,{site_project:'cuantomaterial',...params})};
 window.cmToast=text=>{let t=document.querySelector('.toast');if(!t){t=document.createElement('div');t.className='toast';t.setAttribute('role','status');t.setAttribute('aria-live','polite');document.body.appendChild(t)}t.textContent=text;t.classList.add('show');clearTimeout(window.__cmToastTimer);window.__cmToastTimer=setTimeout(()=>t.classList.remove('show'),1800)};
-function loadGA(){if(window.gtag)return;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',GA_ID,{send_page_view:true,site_project:'cuantomaterial'});const s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;document.head.appendChild(s)}
-function apply(v){localStorage.setItem(KEY,v);document.querySelector('.consent')?.classList.remove('show');if(v==='yes'){loadGA();window.gtag?.('consent','update',{analytics_storage:'granted'})}else window.gtag?.('consent','update',{analytics_storage:'denied'});window.cmToast?.(v==='yes'?'Analytics aceptado':'Analytics rechazado')}
+let gaLoaded=false;
+window['ga-disable-'+GA_ID]=localStorage.getItem(KEY)!=='yes';
+function updateGAConsent(granted){window['ga-disable-'+GA_ID]=!granted;window.gtag?.('consent','update',{analytics_storage:granted?'granted':'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'})}
+function loadGA(){updateGAConsent(true);if(gaLoaded)return;gaLoaded=true;window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});gtag('js',new Date());gtag('config',GA_ID,{send_page_view:true,site_project:'cuantomaterial'});const s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;document.head.appendChild(s)}
+function apply(v){localStorage.setItem(KEY,v);document.querySelector('.consent')?.classList.remove('show');if(v==='yes')loadGA();else updateGAConsent(false);window.cmToast?.(v==='yes'?'Analytics aceptado':'Analytics rechazado')}
 const projectRead=()=>{try{const v=JSON.parse(localStorage.getItem(PROJECT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}};
 const projectWrite=items=>{localStorage.setItem(PROJECT_KEY,JSON.stringify(items.slice(-100)));window.dispatchEvent(new CustomEvent('cmprojectchange'))};
 const defaultMeta=()=>({name:'',budget:null,contingency:10,rooms:['General'],activeRoom:'General'});
