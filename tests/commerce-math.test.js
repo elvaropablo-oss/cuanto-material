@@ -19,7 +19,7 @@ test('pintura usa superficie, techo, manos, rendimiento propio y margen', () => 
 });
 test('suelo y azulejo redondean cajas, incluyendo margen', () => {
   assert.equal(estimate('floor', { area: 20, waste: 10 }).units, 9);
-  assert.equal(estimate('floor', { area: 20, waste: 10 }).total, 238.5);
+  assert.equal(math.estimate('floor', { area: 20, waste: 10 }, catalog.floor[0], '2026-09-13').total, 238.5);
   assert.equal(estimate('tile', { area: 10, waste: 10 }).units, 19);
   assert.equal(estimate('tile', { area: 10, waste: 10 }).total, 125.21);
   assert.equal(estimate('tile', { area: .6, waste: 0 }).units, 1);
@@ -70,6 +70,20 @@ test('todos los productos tienen trazabilidad y mantienen URLs normales', () => 
     assert.equal(p.affiliate.enabled, false); assert.equal(p.affiliate.url, '');
     assert.ok(!p.normalUrl.includes('awinaffid') && !p.normalUrl.includes('awinmid'));
   }
+});
+test('BRIONE conserva compra y caducidad sin presentar una clase AC contradictoria como confirmada', () => {
+  const p = catalog.floor.find(p => p.id === 'loc-ac5');
+  assert.ok(!p.name.includes('AC5'));
+  assert.ok(p.notes.join(' ').includes('título AC5 y tabla técnica AC4'));
+  assert.ok(p.notes.join(' ').includes('no es compatible con habitaciones húmedas'));
+  assert.equal(p.coverage, 2.67);
+  assert.equal(math.price(p, '2026-09-13'), 26.5);
+  assert.equal(math.price(p, '2026-09-12'), null);
+  assert.equal(math.price(p, '2026-09-14'), null);
+  const r = math.estimate('floor', { area: 20, waste: 8 }, p, '2026-09-13');
+  assert.equal(r.units, 9); assert.equal(r.total, 238.5);
+  assert.equal(math.productUrl(p), p.normalUrl);
+  assert.equal(p.affiliate.enabled, false); assert.equal(p.affiliate.url, '');
 });
 test('formatos exactos no añaden una caja por errores de coma flotante', () => {
   assert.equal(math.pack(2.13 * 10, 2.13).units, 10);
