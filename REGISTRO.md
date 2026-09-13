@@ -1,5 +1,12 @@
 # Registro de mejoras autónomas
 
+## 2026-09-13 — discrepancia comercial de clase AC, referencia 89939432
+
+- Fuente oficial consultada: https://www.leroymerlin.es/productos/suelo-laminado-intenso-brione-oak-7mm-espesor-ac5-89939432.html . El título declara AC5 y la tabla técnica AC4; no resolver la contradicción inventando una clase. Nombre del catálogo neutral y nota explícita para confirmar con fabricante. Tabla: no compatible con habitaciones húmedas, sin base integrada.
+- Cobertura2,67m²/caja y precio26,50EUR/caja coinciden con la fuente. Revisión13/09 real, promoción hasta13/09 conservada: no extender caducidad ni cambiar precio o cantidad. IDinterno loc-ac5 conservado para no romper referencias históricas; no representa una certificación.
+- También consultada https://www.bauhaus.es/pavimentos-ceramicos/pavimento-ceramico-atelier/p/31608787 : contenido1,08m²/caja, precio7,55EUR y validez23/09 coinciden. Recurso crawl de ayer: no renovar su verifiedAt como si fuera comprobación live.
+- Afiliación desactivada, URLs oficiales, sin influencia de comisión ni cambios de cálculo/SEO/consentimiento. Solo caché del catálogo versionada en15consumidores. Suite35/35 incluye coste9cajas238,50EUR, fecha futura y caducidad14/09; refs/sitemap/caché/sintaxis OK. Publicación y QA se registran en GOAL_STATE del coordinador tras deploy.
+
 ## 2026-09-13 — optimización exacta y cobertura de formatos decimales
 
 - Evidencia pública: 1000 L en formatos de 2,55 L recomendaba 385 envases/981,75 L, déficit18,25 L y ahorro ficticio80 EUR. La propuesta Cloud3b24a15 tampoco satisface el contrato: con discretización hacia abajo compra400 envases por4000 EUR frente al mínimo393/3930 EUR; tamaños0,55 a escala1 siguen produciendo déficit. No se publicó esa aproximación ni se asumió que make_pr creó una PR real.
