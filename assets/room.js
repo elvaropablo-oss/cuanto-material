@@ -1,5 +1,5 @@
 (()=>{
-const $=id=>document.getElementById(id),n=id=>{const v=parseFloat($(id)?.value);return Number.isFinite(v)?v:0},fmt=(v,d=1)=>new Intl.NumberFormat('es-ES',{maximumFractionDigits:d}).format(v),money=v=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(v),ceil=value=>Math.ceil(value-8*Number.EPSILON*Math.max(1,Math.abs(value)));
+const $=id=>document.getElementById(id),n=id=>{const v=parseFloat($(id)?.value);return Number.isFinite(v)?v:0},fmt=(v,d=1)=>new Intl.NumberFormat('es-ES',{maximumFractionDigits:d}).format(v),money=v=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(v),ceil=value=>{const units=Math.ceil(value-8*Number.EPSILON*Math.max(1,Math.abs(value)));return units===0?0:units};
 let last=null,mode='quick',planState=null;
 function activeMode(){const plan=$('planMode');return plan&&!plan.hidden?'plan':mode}
 function displayNumber(id){const raw=String($(id)?.textContent||'').replace(',','.').replace(/[^0-9.-]/g,'');const v=parseFloat(raw);return Number.isFinite(v)?v:0}

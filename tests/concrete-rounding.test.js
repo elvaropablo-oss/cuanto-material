@@ -10,7 +10,7 @@ function calculate(values,type='concrete'){
   const form={dataset:{calculator:type},addEventListener(){},checkValidity(){return true}};
   const document={getElementById:id=>nodes[id],querySelector:s=>s==='[data-calculator]'?form:s.startsWith('script[')?{}:null,createElement:element,addEventListener:(event,fn)=>{if(event==='DOMContentLoaded')ready=fn}};
   vm.runInNewContext(fs.readFileSync('assets/calculators.js','utf8'),{document,window:{},Intl,Number,Math});ready();
-  return Object.fromEntries(nodes.metrics.children.map(row=>[row.children[1].textContent,row.children[0].textContent]));
+  return {...Object.fromEntries(nodes.metrics.children.map(row=>[row.children[1].textContent,row.children[0].textContent])),main:nodes.resultMain.textContent,sub:nodes.resultSub.textContent};
 }
 test('exact 1200 litres require 96 sacks, not 97 from floating-point noise',()=>{
   const result=calculate({length:4,width:3,thickness:10,waste:0,bagYield:12.5,bagPrice:4});
@@ -30,4 +30,10 @@ test('exact package boundaries do not add an extra unit in other calculators',()
 test('a measurable shortage is never rounded down by the tolerance',()=>{
   const result=calculate({area:2.100001,coverage:.7,waste:0,boxPrice:10,roomL:0,roomW:0,doors:0,skirtingPiece:2.4},'floor');
   assert.equal(result.Coste,new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(40));
+});
+test('zero floor quantity has no negative-zero area or cost',()=>{
+  const result=calculate({area:0,coverage:.7,waste:0,boxPrice:10,roomL:0,roomW:0,doors:0,skirtingPiece:2.4},'floor');
+  assert.equal(result.main,'0 cajas');
+  assert.equal(result.sub,'Comprarías 0 m² de suelo.');
+  assert.equal(result.Coste,new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(0));
 });
