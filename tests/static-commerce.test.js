@@ -36,3 +36,21 @@ test('cada recurso compartido usa una única versión de caché', () => {
   const inconsistent = [...versions].filter(([, values]) => values.size > 1).map(([asset, values]) => `${asset}: ${[...values].join(', ')}`);
   assert.deepEqual(inconsistent, []);
 });
+
+test('todos los campos estáticos de formulario tienen una etiqueta asociada', () => {
+  const missing = [];
+  for (const file of fs.readdirSync('.').filter(p => p.endsWith('.html'))) {
+    const html = fs.readFileSync(file, 'utf8');
+    for (const [form] of html.matchAll(/<form\b[\s\S]*?<\/form>/gi)) {
+      for (const [control, tag, attributes] of form.matchAll(/<(input|select|textarea)\b([^>]*)>/gi)) {
+        const id = attributes.match(/\bid="([^"]+)"/i)?.[1];
+        const type = attributes.match(/\btype="([^"]+)"/i)?.[1]?.toLowerCase();
+        if (!id || ['button', 'hidden', 'reset', 'submit', 'radio'].includes(type)) continue;
+        const labelled = new RegExp(`<label\\b[^>]*\\bfor="${id}"`, 'i').test(form);
+        const ariaLabelled = /\baria-label(?:ledby)?="[^"]+"/i.test(control);
+        if (!labelled && !ariaLabelled) missing.push(`${file}: #${id}`);
+      }
+    }
+  }
+  assert.deepEqual(missing, []);
+});
