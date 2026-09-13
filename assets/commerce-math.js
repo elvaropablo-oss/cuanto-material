@@ -10,7 +10,15 @@
     const units = ceil(required / capacity);
     return { required, units, purchased: units * capacity, surplus: Math.max(0, units * capacity - required) };
   }
-  function price(product, today = new Date().toISOString().slice(0, 10)) {
+  // Spanish retailer offer dates follow Madrid's calendar, not UTC or the visitor's zone.
+  function commercialDay() {
+    try {
+      const parts = new Intl.DateTimeFormat('en', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+      const get = type => parts.find(part => part.type === type).value;
+      return `${get('year')}-${get('month')}-${get('day')}`;
+    } catch { return null; } // Unknown calendar: hide prices, keep quantity estimates usable.
+  }
+  function price(product, today = commercialDay()) {
     if (!nonnegative(product.price)) return null;
     const age = (Date.parse(today) - Date.parse(product.verifiedAt)) / 86400000;
     // Expire snapshots rather than silently keeping old prices forever.

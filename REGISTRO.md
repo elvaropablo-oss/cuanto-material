@@ -1,5 +1,11 @@
 # Registro de mejoras autónomas
 
+## 2026-09-13 — calendario comercial de Madrid para caducidad
+
+- Reproducción del módulo publicado:13/09T22:30Z es14/09 00:30Madrid; precio con fin13/09 seguía vigente por usar fechaUTC. Ahora las fechas comerciales de tiendas españolas usan Europe/Madrid, sin depender de la zona del visitante ni de un desplazamiento horario fijo.
+- Intl.DateTimeFormat.formatToParts genera año/mes/día sin depender de orden o separadores locales. Si no se puede determinar el calendario, el precio queda desconocido y se mantienen cantidades. No cambiar fechas de revisión/promoción, precios, unidades, afiliación ni ranking.
+- Regresiones: medianoche verano/invierno, días de cambio de horario, antigüedad7días, revisión futura, fecha explícita y calendario no disponible. Cache de commerce-math versionada en consumidores; publicación y QA posterior se registran en GOAL_STATE del coordinador.
+
 ## 2026-09-13 — discrepancia comercial de clase AC, referencia 89939432
 
 - Fuente oficial consultada: https://www.leroymerlin.es/productos/suelo-laminado-intenso-brione-oak-7mm-espesor-ac5-89939432.html . El título declara AC5 y la tabla técnica AC4; no resolver la contradicción inventando una clase. Nombre del catálogo neutral y nota explícita para confirmar con fabricante. Tabla: no compatible con habitaciones húmedas, sin base integrada.
