@@ -1,5 +1,14 @@
 # Registro de mejoras autónomas
 
+## 2026-09-13 — optimización exacta y cobertura de formatos decimales
+
+- Evidencia pública: 1000 L en formatos de 2,55 L recomendaba 385 envases/981,75 L, déficit18,25 L y ahorro ficticio80 EUR. La propuesta Cloud3b24a15 tampoco satisface el contrato: con discretización hacia abajo compra400 envases por4000 EUR frente al mínimo393/3930 EUR; tamaños0,55 a escala1 siguen produciendo déficit. No se publicó esa aproximación ni se asumió que make_pr creó una PR real.
+- Cambio: centésimas enteras, compresión por máximo común divisor, precios en céntimos y reducción de cantidades grandes mediante intercambio de cantidades idénticas con el formato de menor coste unitario. Se conserva el mínimo coste y, en empate, el menor sobrante. Límite de memoria explícito sin inventar un óptimo; entradas no representables se rechazan. Un fallo de cálculo limpia el resultado anterior y desactiva copiar/guardar. Cache de optimizer.js actualizada.
+- Archivos: assets/optimizer.js, optimizador-compra-materiales.html, tests/optimizer-math.test.js y este registro. Catálogo, afiliación, canonical, sitemap y consentimiento intactos.
+- Validación: suite30/30, oráculo independiente120 casos, límites600/6000, formatos0,55/2,55/333,36 y hasta1000000, ejemplo11,4 L=70 EUR; prueba mixta100000000 con cobertura y coste no mayor que formato único. No se reclaman ingresos ni mejora SEO por estos tests.
+- Commit/push/Actions/Pages y QA público: pendientes en esta rama; el estado coordinador GOAL_STATE.md registrará SHAs/runs reales tras completar publicación.
+- Pendiente honesto: combinaciones excepcionalmente complejas cuyo residual exacto supera2000000 estados no devuelven una compra aproximada; muestran error controlado. No se ha reducido silenciosamente la cantidad necesaria ni impuesto un máximo arbitrario al formulario.
+
 Este registro conserva las decisiones y validaciones de las mejoras autónomas realizadas sobre CuántoMaterial. No sustituye al historial de Git ni a los datos reales de Search Console o Analytics.
 
 | Fecha | Hipótesis | Acción | Archivos | Tests | Commit | Deploy | Resultado | Bloqueo | Siguiente acción |
