@@ -54,3 +54,12 @@ test('todos los campos estáticos de formulario tienen una etiqueta asociada', (
   }
   assert.deepEqual(missing, []);
 });
+
+test('los campos dinámicos del optimizador tienen etiquetas e identificadores únicos', () => {
+  const source = fs.readFileSync('assets/optimizer.js', 'utf8');
+  for (const key of ['name', 'size', 'price']) {
+    assert.ok(source.includes(`label for="format-${key}-${'${i}'}"`), `falta label de ${key}`);
+    assert.ok(source.includes(`id="format-${key}-${'${i}'}"`), `falta id de ${key}`);
+  }
+  assert.ok(source.includes('aria-label="Eliminar ${esc((f.name||`formato ${i+1}`).trim())}"'));
+});
