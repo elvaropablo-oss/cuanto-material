@@ -24,3 +24,15 @@ test('todas las URLs del sitemap corresponden a páginas', () => {
     assert.ok(fs.existsSync(target), target);
   }
 });
+test('cada recurso compartido usa una única versión de caché', () => {
+  const versions = new Map();
+  for (const file of fs.readdirSync('.').filter(p => p.endsWith('.html'))) {
+    const html = fs.readFileSync(file, 'utf8');
+    for (const [, asset, version] of html.matchAll(/(?:href|src)="(assets\/[^"?]+\.(?:css|js))(?:\?v=([^"&]+))?"/g)) {
+      if (!versions.has(asset)) versions.set(asset, new Set());
+      versions.get(asset).add(version || '(sin versión)');
+    }
+  }
+  const inconsistent = [...versions].filter(([, values]) => values.size > 1).map(([asset, values]) => `${asset}: ${[...values].join(', ')}`);
+  assert.deepEqual(inconsistent, []);
+});
