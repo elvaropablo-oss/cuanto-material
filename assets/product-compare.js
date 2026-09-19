@@ -17,6 +17,10 @@
     const priced = engine.rank(products.filter(p => p.price !== null), { required, technicalCriteria: criteria, calculate: pack });
     const unpriced = products.filter(p => p.price === null).map(p => ({ ...p, purchase: pack(p), technical: engine.technicalScore(p, criteria), valueScore: null }));
     const validTech = row => row.technical.coverage >= .6 && row.technical.score !== null;
+    const comparableValues = priced.filter(row => row.valueScore !== null);
+    const valueOption = $('compareSort').querySelector('option[value="value"]');
+    valueOption.disabled = comparableValues.length < 2;
+    if (valueOption.disabled && $('compareSort').value === 'value') $('compareSort').value = 'tech';
     const field = $('compareSort').value;
     const score = row => field === 'tech' ? (validTech(row) ? row.technical.score : null) : field === 'area' ? (row.price === null ? null : row.price / row.size / row.yield) : field.startsWith('cost') ? row.purchase.projectCost : row.valueScore;
     const descending = ['value', 'tech', 'cost_desc'].includes(field);
@@ -26,14 +30,36 @@
       if (y === null) return -1;
       return descending ? y - x : x - y;
     });
-    const wins = engine.winners(priced.filter(validTech)), cheapest = [...priced].sort((a, b) => a.purchase.projectCost - b.purchase.projectCost)[0], best = wins.bestValue;
-    $('compareHighlights').innerHTML = [cheapest ? ['Menor coste con precio verificado', cheapest.name, money(cheapest.purchase.projectCost)] : null, best ? ['Mejor índice calidad-precio calculable', best.name, fmt(best.valueScore, 0) + '/100'] : null, wins.bestTechnical ? ['Mayor índice técnico comparable', wins.bestTechnical.name, fmt(wins.bestTechnical.technical.score, 0) + '/100'] : null].filter(Boolean).map(([label, name, value]) => '<div class="compare-highlight"><span>' + esc(label) + '</span><b>' + esc(name) + '</b><strong>' + value + '</strong></div>').join('');
+    const technicalRows = rows.filter(validTech);
+    const cheapest = priced.length > 1 ? [...priced].sort((a, b) => a.purchase.projectCost - b.purchase.projectCost)[0] : null;
+    const onlyPrice = priced.length === 1 ? priced[0] : null;
+    const best = comparableValues.length > 1 ? [...comparableValues].sort((a, b) => b.valueScore - a.valueScore)[0] : null;
+    const bestTechnical = technicalRows.length > 1 ? [...technicalRows].sort((a, b) => b.technical.score - a.technical.score)[0] : null;
+    let priceStatus = $('comparePriceStatus');
+    if (!priceStatus) {
+      priceStatus = document.createElement('p');
+      priceStatus.id = 'comparePriceStatus';
+      priceStatus.className = 'source-note';
+      priceStatus.setAttribute('role', 'status');
+      $('compareHighlights').before(priceStatus);
+    }
+    priceStatus.textContent = priced.length === 0
+      ? 'No hay precios vigentes verificados. Puedes comparar formatos y características técnicas; consulta el precio actual en cada tienda. El índice calidad-precio queda desactivado.'
+      : priced.length === 1
+        ? 'Solo 1 de ' + products.length + ' pinturas tiene precio vigente verificado. Ese importe no permite identificar la opción más barata. Puedes comparar características técnicas y consultar los demás precios en cada tienda.'
+        : comparableValues.length < 2
+          ? 'Hay ' + priced.length + ' precios vigentes de ' + products.length + ' pinturas. Puedes comparar costes, pero faltan datos técnicos suficientes para un índice calidad-precio entre dos productos.'
+          : 'Hay ' + priced.length + ' precios vigentes de ' + products.length + ' pinturas. Las comparaciones de coste y calidad-precio solo incluyen productos con precio verificado.';
+    $('compareHighlights').innerHTML = [cheapest ? ['Menor coste entre precios verificados', cheapest.name, money(cheapest.purchase.projectCost)] : null, onlyPrice ? ['Único precio vigente verificado', onlyPrice.name, money(onlyPrice.purchase.projectCost)] : null, best ? ['Mejor índice calidad-precio calculable', best.name, fmt(best.valueScore, 0) + '/100'] : null, bestTechnical ? ['Mayor índice técnico comparable', bestTechnical.name, fmt(bestTechnical.technical.score, 0) + '/100'] : null].filter(Boolean).map(([label, name, value]) => '<div class="compare-highlight"><span>' + esc(label) + '</span><b>' + esc(name) + '</b><strong>' + value + '</strong></div>').join('');
     box.replaceChildren();
     rows.forEach(row => {
       const card = document.createElement('article'); card.className = 'product-card' + (row.id === best?.id ? ' recommended' : ''); card.dataset.productId = row.id;
-      const badges = (row.id === best?.id ? '<span class="badge">Mejor calidad-precio calculable</span>' : '') + (row.id === cheapest?.id ? '<span class="badge">Menor coste verificado</span>' : '');
+      const badges = (row.id === best?.id ? '<span class="badge">Mejor calidad-precio calculable</span>' : '') + (row.id === cheapest?.id ? '<span class="badge">Menor coste verificado</span>' : '') + (row.id === onlyPrice?.id ? '<span class="badge">Precio vigente verificado</span>' : '');
       const need = required / row.yield, cost = row.purchase.projectCost;
-      card.innerHTML = '<div class="product-card-head"><div><div class="product-badges">' + badges + '</div><small>' + esc(row.retailer) + ' · ficha consultada ' + esc(row.verifiedAt) + '</small><h2>' + esc(row.name) + '</h2></div><div class="product-score"><b>' + (row.valueScore === null ? '—' : fmt(row.valueScore, 0)) + '</b><span>' + (row.valueScore === null ? 'Sin índice comparable' : 'calidad-precio') + '</span></div></div><div class="product-price"><strong>' + (cost === null ? 'Consultar precio' : money(cost)) + '</strong><span>para ' + fmt(area) + ' m² · ' + coats + ' manos · ' + fmt(margin * 100, 0) + ' % de margen</span></div><div class="product-metrics"><div><b>' + row.purchase.units + ' × ' + fmt(row.size) + ' L</b><span>Compra</span></div><div><b>' + fmt(need) + ' L</b><span>Necesidad</span></div><div><b>' + fmt(row.purchase.purchased) + ' L</b><span>Compra total</span></div><div><b>' + fmt(row.purchase.waste) + ' L</b><span>Sobrante</span></div><div><b>' + (validTech(row) ? fmt(row.technical.score, 0) + '/100' : 'Datos insuficientes') + '</b><span>Índice técnico</span></div><div><b>' + (row.price === null ? 'Sin precio vigente verificado' : money(row.price)) + '</b><span>Precio por bote</span></div><div><b>' + esc(row.yieldLabel) + ' m²/L</b><span>Rendimiento declarado</span></div></div><div class="product-features">' + row.notes.map(n => '<span>' + esc(n) + '</span>').join('') + '</div><div class="product-actions"><a class="btn" target="_blank" rel="noopener noreferrer">Ver producto y precio actual ↗</a><button class="btn accent" type="button">Añadir a Mi proyecto</button></div>';
+      const showTechnical = field === 'tech' && validTech(row);
+      const displayScore = showTechnical ? row.technical.score : row.valueScore;
+      const scoreLabel = showTechnical ? 'índice técnico' : row.valueScore === null ? 'calidad-precio sin datos' : 'calidad-precio';
+      card.innerHTML = '<div class="product-card-head"><div><div class="product-badges">' + badges + '</div><small>' + esc(row.retailer) + ' · ficha consultada ' + esc(row.verifiedAt) + '</small><h2>' + esc(row.name) + '</h2></div><div class="product-score"><b>' + (displayScore === null ? '—' : fmt(displayScore, 0)) + '</b><span>' + scoreLabel + '</span></div></div><div class="product-price"><strong>' + (cost === null ? 'Consultar precio' : money(cost)) + '</strong><span>para ' + fmt(area) + ' m² · ' + coats + ' manos · ' + fmt(margin * 100, 0) + ' % de margen</span></div><div class="product-metrics"><div><b>' + row.purchase.units + ' × ' + fmt(row.size) + ' L</b><span>Compra</span></div><div><b>' + fmt(need) + ' L</b><span>Necesidad</span></div><div><b>' + fmt(row.purchase.purchased) + ' L</b><span>Compra total</span></div><div><b>' + fmt(row.purchase.waste) + ' L</b><span>Sobrante</span></div><div><b>' + (validTech(row) ? fmt(row.technical.score, 0) + '/100' : 'Datos insuficientes') + '</b><span>Índice técnico</span></div><div><b>' + (row.price === null ? 'Sin precio vigente verificado' : money(row.price)) + '</b><span>Precio por bote</span></div><div><b>' + esc(row.yieldLabel) + ' m²/L</b><span>Rendimiento declarado</span></div></div><div class="product-features">' + row.notes.map(n => '<span>' + esc(n) + '</span>').join('') + '</div><div class="product-actions"><a class="btn" target="_blank" rel="noopener noreferrer">Ver producto y precio actual ↗</a><button class="btn accent" type="button">Añadir a Mi proyecto</button></div>';
       const link = card.querySelector('a'); link.href = math.productUrl(row); link.dataset.affiliate = 'false';
       link.addEventListener('click', () => window.cmTrack?.('product_click', { product_id: row.id, retailer: row.retailer, category: 'paint' }));
       card.querySelector('button').addEventListener('click', () => { window.CMProject?.add({ title: 'Pintura: ' + row.name, source: 'comparador-pinturas.html', main: cost === null ? 'Precio por consultar' : money(cost), sub: row.purchase.units + ' envases de ' + fmt(row.size) + ' L.', metrics: [['Tienda', row.retailer], ['Necesitas', fmt(need) + ' L'], ['Compras', fmt(row.purchase.purchased) + ' L'], ['Sobrante', fmt(row.purchase.waste) + ' L'], ['Ficha consultada', row.verifiedAt]], cost }); window.cmToast?.('Producto añadido a Mi proyecto'); });
