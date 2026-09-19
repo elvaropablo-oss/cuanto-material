@@ -19,7 +19,7 @@ test('pintura usa superficie, techo, manos, rendimiento propio y margen', () => 
 });
 test('suelo y azulejo redondean cajas, incluyendo margen', () => {
   assert.equal(estimate('floor', { area: 20, waste: 10 }).units, 9);
-  assert.equal(math.estimate('floor', { area: 20, waste: 10 }, catalog.floor[0], '2026-09-13').total, 238.5);
+  assert.equal(math.estimate('floor', { area: 20, waste: 10 }, catalog.floor[0], '2026-09-18').total, 238.5);
   assert.equal(estimate('tile', { area: 10, waste: 10 }).units, 19);
   assert.equal(estimate('tile', { area: 10, waste: 10 }).total, 125.21);
   assert.equal(estimate('tile', { area: .6, waste: 0 }).units, 1);
@@ -30,9 +30,9 @@ test('placas cuentan ambas caras e aislamiento usa m² por paquete', () => {
   assert.equal(estimate('insulation', { area: 20, waste: 10 }).units, 5);
 });
 test('hormigón cm y mortero mm usan consumo seco, no agua de amasado', () => {
-  const c = estimate('concrete', { length: 2, width: 1, thickness: 10, waste: 0 });
+  const c = math.estimate('concrete', { length: 2, width: 1, thickness: 10, waste: 0 }, catalog.concrete[0], '2026-09-19');
   assert.equal(c.required, 480); assert.equal(c.units, 20); assert.equal(c.total, 85.8);
-  const m = estimate('mortar', { area: 10, thickness: 10, waste: 0 });
+  const m = math.estimate('mortar', { area: 10, thickness: 10, waste: 0 }, catalog.mortar[0], '2026-09-19');
   assert.equal(m.required, 240); assert.equal(m.units, 10); assert.equal(m.total, 27.8);
 });
 test('ladrillo usa medidas reales, junta y huecos; rodapié descuenta puertas', () => {
@@ -77,10 +77,10 @@ test('BRIONE conserva compra y caducidad sin presentar una clase AC contradictor
   assert.ok(p.notes.join(' ').includes('título AC5 y tabla técnica AC4'));
   assert.ok(p.notes.join(' ').includes('no es compatible con habitaciones húmedas'));
   assert.equal(p.coverage, 2.67);
-  assert.equal(math.price(p, '2026-09-13'), 26.5);
-  assert.equal(math.price(p, '2026-09-12'), null);
-  assert.equal(math.price(p, '2026-09-14'), null);
-  const r = math.estimate('floor', { area: 20, waste: 8 }, p, '2026-09-13');
+  assert.equal(math.price(p, '2026-09-18'), 26.5);
+  assert.equal(math.price(p, '2026-09-17'), null);
+  assert.equal(math.price(p, '2026-09-26'), null);
+  const r = math.estimate('floor', { area: 20, waste: 8 }, p, '2026-09-18');
   assert.equal(r.units, 9); assert.equal(r.total, 238.5);
   assert.equal(math.productUrl(p), p.normalUrl);
   assert.equal(p.affiliate.enabled, false); assert.equal(p.affiliate.url, '');
