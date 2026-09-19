@@ -21,7 +21,7 @@ test('suelo y azulejo redondean cajas, incluyendo margen', () => {
   assert.equal(estimate('floor', { area: 20, waste: 10 }).units, 9);
   assert.equal(math.estimate('floor', { area: 20, waste: 10 }, catalog.floor[0], '2026-09-18').total, 238.5);
   assert.equal(estimate('tile', { area: 10, waste: 10 }).units, 19);
-  assert.equal(estimate('tile', { area: 10, waste: 10 }).total, 125.21);
+  assert.equal(math.estimate('tile', { area: 10, waste: 10 }, catalog.tile[0], '2026-09-19').total, 125.21);
   assert.equal(estimate('tile', { area: .6, waste: 0 }).units, 1);
 });
 test('placas cuentan ambas caras e aislamiento usa m² por paquete', () => {
